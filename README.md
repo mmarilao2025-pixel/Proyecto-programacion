@@ -5,4 +5,4 @@ Integrantes:
 -Franchesca Marcial
 -Maria Marilao
 
-Proyecto: Inventario de stock de un local de comida rapida, generar boletas sentre otros.
+Proyecto: Inventario de stock de un local de comida rapida, genera boletas y otras cosas.

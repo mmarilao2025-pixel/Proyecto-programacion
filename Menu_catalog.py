@@ -17,4 +17,8 @@ def get_default_menus() -> List[IMenu]:
             precio=1800,
             icono_path="IMG/icono_hotdog_sin_texto_64x64.png",
         ),
+            "Papa frita",
+            [
+                Ingrediente("papas","unid", 5)
+            ]
     ]

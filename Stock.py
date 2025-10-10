@@ -1,5 +1,5 @@
 from Ingrediente import Ingrediente
-
+from typing import List
 class Stock:
     def __init__(self):
         self.lista_ingredientes = []
@@ -23,9 +23,17 @@ class Stock:
         for item in self.lista_ingredientes:
             print(f" Ingrediente: {item.nombre}, Cantidad: {item.cantidad}")
 
-    def actualizar_stock(self, nombre_ingrediente, nueva_cantidad):
-        pass
+    def actualizar_stock(self, nombre_ingrediente: str, nueva_cantidad: float):
+        """Actualiza la cantidad de un ingrediente específico."""
+        ingrediente = self.buscar_ingrediente(nombre_ingrediente)
+        if ingrediente:
+            ingrediente_anterior = ingrediente.cantidad
+            ingrediente.cantidad = float(nueva_cantidad)
+            print(f"Stock de '{nombre_ingrediente}' actualizado: {ingrediente_anterior} → {nueva_cantidad}")
+        else:
+            print(f"Ingrediente '{nombre_ingrediente}' no encontrado.")
 
-    def obtener_elementos_menu(self):
-        pass
+    def obtener_elementos_menu(self) -> List[Ingrediente]:
+        """Retorna la lista completa de ingredientes."""
+        return self.lista_ingredientes.copy()
 

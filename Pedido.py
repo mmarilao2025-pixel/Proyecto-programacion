@@ -1,4 +1,3 @@
-# Pedido.py
 from ElementoMenu import CrearMenu 
 from typing import List
 

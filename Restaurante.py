@@ -106,9 +106,12 @@ class AplicacionConPestanas(ctk.CTk):
         self.actualizar_treeview()   
 
     def cargar_csv(self):
-        archivo = filedialog.askopenfilename(filetypes=[("Archivo Csv", "*.csv")])
-        if not archivo:
-            return
+        archivo = filedialog.askopenfile(filetypes=[("Archivos CSV", "*.csv")])  # Abre ventana para la carga de los archivos
+        DataFrame = pd.read_csv(archivo)    #Encargado de leer el archivo csv
+        self.df_csv = DataFrame
+
+        #Llama al metodo de mostrar dataframe (datos) en la tabla
+        self.mostrar_dataframe_en_tabla(DataFrame)
         
 
     def mostrar_dataframe_en_tabla(self, df):

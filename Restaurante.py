@@ -106,18 +106,23 @@ class AplicacionConPestanas(ctk.CTk):
         self.actualizar_treeview()   
 
     def cargar_csv(self):
-        archivo = filedialog.askopenfile(filetypes=[("Archivos CSV", "*.csv")])  # Abre ventana para la carga de los archivos
-        DataFrame = pd.read_csv(archivo)    #Encargado de leer el archivo csv
-        self.df_csv = DataFrame
-
-        #Llama al metodo de mostrar dataframe (datos) en la tabla
-        self.mostrar_dataframe_en_tabla(DataFrame)
+        archivo = filedialog.askopenfile(filetypes=[("Archivos CSV", "*.csv")])
         
+        # Lee el archivo CSV con codificación
+        DataFrame = pd.read_csv(archivo, encoding='utf-8', skipinitialspace=True, engine='python')
+        
+        # Realiza Una Limpieza del encabezado
+        DataFrame.columns = [col.replace('\ufeff', '').replace('ï»¿', '').strip() for col in DataFrame.columns]
+
+        self.df_csv = DataFrame
+        self.mostrar_dataframe_en_tabla(DataFrame)
+
 
     def mostrar_dataframe_en_tabla(self, df):
         if self.tabla_csv:
             self.tabla_csv.destroy()
 
+        print(list(df.columns))
         self.tabla_csv = ttk.Treeview(self.frame_tabla_csv, columns=list(df.columns), show="headings")
         for col in df.columns:
             self.tabla_csv.heading(col, text=col)

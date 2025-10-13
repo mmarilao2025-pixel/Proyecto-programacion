@@ -96,9 +96,9 @@ def get_default_menus() -> List[IMenu]:
             icono_path= ""
 
         ),
-        
+
         CrearMenu(
-            "Pollo Frito",
+            "Ensalada",
             [
                 Ingrediente("Lechuga","unid", 1),
                 Ingrediente("Tomate","unid", 1),

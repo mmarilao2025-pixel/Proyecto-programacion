@@ -60,11 +60,22 @@ def get_default_menus() -> List[IMenu]:
         ),
 
         CrearMenu(
-            "Empanadas",
+            "Empanada de carne",
             [
                 Ingrediente("Masa de empanadas","unid", 1),
                 Ingrediente("Carne de Vacuno","unid", 1),
                 Ingrediente("Cabolla","unid", 1),
+                
+            ],
+            precio=2000,
+            icono_path= "IMG/icono_empanada_carne_64x64.png"
+        ),
+
+        CrearMenu(
+            "Empanada de queso",
+            [
+                Ingrediente("Masa de empanadas","unid", 1),
+                Ingrediente("Queso","unid", 1),
                 
             ],
             precio=2000,
@@ -80,7 +91,7 @@ def get_default_menus() -> List[IMenu]:
                 
             ],
             precio=2000,
-            icono_path= ""
+            icono_path= "IMG/icono_panqueques_64x64 (1).png"
 
         ),
 
@@ -93,12 +104,12 @@ def get_default_menus() -> List[IMenu]:
                 
             ],
             precio=2800,
-            icono_path= ""
+            icono_path= "IMG/icono_pollo_frito_64x64.png"
 
         ),
         
         CrearMenu(
-            "Pollo Frito",
+            "Ensalada",
             [
                 Ingrediente("Lechuga","unid", 1),
                 Ingrediente("Tomate","unid", 1),
@@ -106,7 +117,7 @@ def get_default_menus() -> List[IMenu]:
                 
             ],
             precio=1500,
-            icono_path= ""
+            icono_path= "IMG/icono_ensalada_64x64.png"
 
         ),
         

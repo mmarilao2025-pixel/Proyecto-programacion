@@ -197,7 +197,28 @@ class AplicacionConPestanas(ctk.CTk):
         
 
     def mostrar_boleta(self):
-        pass
+        pdf_path = "boleta.pdf"
+
+        if not os.path.exists(pdf_path):
+            CTkMessagebox(title="Error", message="No se ha generado ninguna boleta aún. Debes generar una boleta desde la pestaña 'Pedido'.", icon="warning")
+            return
+        try:  #eliminar el visor anterior (ventanita, para actualizarlo bien)
+            if self.pdf_viewer_boleta is not None:
+                try:
+                    self.pdf_viewer_boleta.pack_forget()
+                    self.pdf_viewer_boleta.destroy()
+                except Exception:
+                    pass
+                    self.pdf_viewer_boleta = None  
+
+            abs_pdf = os.path.abspath(pdf_path) # obtener la ruta absoluta del PDF
+
+             #crear el nuevo visor con el PDF actualizado
+            self.pdf_viewer_boleta = CTkPDFViewer(self.pdf_frame_boleta, file=abs_pdf)
+            self.pdf_viewer_boleta.pack(expand=True, fill="both")
+
+        except Exception as e: # si la carga del pdf falla mostrar error
+            CTkMessagebox(title="Error", message=f"No se pudo mostrar la boleta.\n{e}", icon="warning")
 
     def configurar_pestana1(self):
         # Dividir la Pestaña 1 en dos frames

@@ -85,7 +85,7 @@ class AplicacionConPestanas(ctk.CTk):
         self.df_csv = None   
         self.tabla_csv = None
 
-        self.boton_agregar_stock = ctk.CTkButton(self.frame_tabla_csv, text="Agregar al Stock")
+        self.boton_agregar_stock = ctk.CTkButton(self.frame_tabla_csv, text="Agregar al Stock", command=self.agregar_csv_al_stock )
         self.boton_agregar_stock.pack(side="bottom", pady=10)
  
     def agregar_csv_al_stock(self):
@@ -96,9 +96,10 @@ class AplicacionConPestanas(ctk.CTk):
         if 'nombre' not in self.df_csv.columns or 'cantidad' not in self.df_csv.columns:
             CTkMessagebox(title="Error", message="El CSV debe tener columnas 'nombre' y 'cantidad'.", icon="warning")
             return
+        
         for _, row in self.df_csv.iterrows():
             nombre = str(row['nombre'])
-            cantidad = str(row['cantidad'])
+            cantidad = float(row['cantidad'])
             unidad = str(row['unidad'])
             ingrediente = Ingrediente(nombre=nombre,unidad=unidad,cantidad=cantidad)
             self.stock.agregar_ingrediente(ingrediente)
@@ -373,7 +374,13 @@ class AplicacionConPestanas(ctk.CTk):
         pass
 
     def actualizar_treeview(self):
-        pass
+        # Limpiar el treeview
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+        # Insertar los ingredientes actualizados
+        for ingrediente in self.stock.lista_ingredientes:
+            self.tree.insert("", "end", values=(ingrediente.nombre, ingrediente.unidad, ingrediente.cantidad))
 
 
 if __name__ == "__main__":

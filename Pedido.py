@@ -23,8 +23,14 @@ class Pedido:
         self.menus.append(nuevo_menu)
 
     def eliminar_menu(self, nombre_menu: str):
-        """Elimina un menú del pedido."""
-        self.menus = [menu for menu in self.menus if menu.nombre != nombre_menu]
+        # Disminuye la cantidad de un menú o lo elimina si llega a 0
+        for menu in self.menus:
+            if menu.nombre == nombre_menu:
+                menu.cantidad -= 1
+                if menu.cantidad <= 0:
+                    self.menus.remove(menu)
+                break
+
 
     def mostrar_pedido(self):
         """Muestra el contenido del pedido."""
@@ -37,7 +43,7 @@ class Pedido:
             print(f"  - {menu.nombre}: {menu.cantidad} x ${menu.precio:.2f} = ${menu.cantidad * menu.precio:.2f}")
         
         total = self.calcular_total()
-        print(f"Total: ${total:.2f}")
+        print(f"Total: ${total:.2f}") #llama al metodo de abajo
 
     def calcular_total(self) -> float:
         """Calcula el total del pedido."""
@@ -47,9 +53,3 @@ class Pedido:
         """Limpia todo el pedido."""
         self.menus.clear()
 
-    def __len__(self):
-        """Retorna la cantidad total de ítems en el pedido."""
-        return sum(menu.cantidad for menu in self.menus)
-
-    def __str__(self):
-        return f"Pedido con {len(self)} ítems - Total: ${self.calcular_total():.2f}"

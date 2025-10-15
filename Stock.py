@@ -10,7 +10,16 @@ class Stock:
                 item.cantidad += ingrediente.cantidad
                 print(f" Stock de '{ingrediente.nombre}' actualizado a {item.cantidad}.")
                 return
+        self.lista_ingredientes.append(ingrediente)
+        print(f" Nuevo ingrediente '{ingrediente.nombre}' agregado con cantidad {ingrediente.cantidad}.")
 
+    def buscar_ingrediente(self, nombre_ingrediente: str):
+        """Busca un ingrediente por nombre (case insensitive)"""
+        for item in self.lista_ingredientes:
+            if item.nombre.lower() == nombre_ingrediente.lower():
+                return item
+        return None
+    
     def eliminar_ingrediente(self, nombre_ingrediente):
         for item in self.lista_ingredientes:
             if item.nombre.lower() == nombre_ingrediente.lower():
@@ -34,6 +43,5 @@ class Stock:
             print(f"Ingrediente '{nombre_ingrediente}' no encontrado.")
 
     def obtener_elementos_menu(self) -> List[Ingrediente]:
-        """Retorna la lista completa de ingredientes."""
         return self.lista_ingredientes.copy()
 

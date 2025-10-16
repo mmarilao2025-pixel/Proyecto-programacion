@@ -46,19 +46,32 @@ class AplicacionConPestanas(ctk.CTk):
 
     def on_tab_change(self):
         selected_tab = self.tabview.get()
+
         if selected_tab == "carga de ingredientes":
             print('carga de ingredientes')
-        if selected_tab == "Stock":
+
+        elif selected_tab == "Stock":
             self.actualizar_treeview()
-        if selected_tab == "Pedido":
-            self.actualizar_treeview()
+
+        elif selected_tab == "Pedido":
+            self.actualizar_treeview_pedido()
             print('pedido')
-        if selected_tab == "Carta restorante":
-            self.actualizar_treeview()
+
+            # Limpiar tarjetas previas
+            for widget in tarjetas_frame.winfo_children():
+                widget.destroy()
+
+            # Crear tarjetas con imágenes
+            for menu in self.menus:
+                self.crear_tarjeta(menu)
+
+        elif selected_tab == "Carta restorante":
             print('Carta restorante')
-        if selected_tab == "Boleta":
-            self.actualizar_treeview()
-            print('Boleta')       
+
+        elif selected_tab == "Boleta":
+            print('Boleta')
+
+
     def crear_pestanas(self):
         self.tab3 = self.tabview.add("carga de ingredientes")  
         self.tab1 = self.tabview.add("Stock")

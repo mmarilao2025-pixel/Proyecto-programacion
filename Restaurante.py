@@ -236,7 +236,7 @@ class AplicacionConPestanas(ctk.CTk):
 
         label_cantidad = ctk.CTkLabel(frame_formulario, text="Unidad:")
         label_cantidad.pack(pady=5)
-        self.combo_unidad = ctk.CTkComboBox(frame_formulario, values=["unid, "])
+        self.combo_unidad = ctk.CTkComboBox(frame_formulario, values=["unid"])
         self.combo_unidad.pack(pady=5)
 
         label_cantidad = ctk.CTkLabel(frame_formulario, text="Cantidad:")
@@ -261,6 +261,51 @@ class AplicacionConPestanas(ctk.CTk):
 
         self.boton_generar_menu = ctk.CTkButton(frame_treeview, text="Generar Menú", command=self.generar_menus)
         self.boton_generar_menu.pack(pady=10)
+    
+    def ingresar_ingrediente(self):
+        # Agrega un nuevo ingrediente al stock desde el formulario
+        nombre = self.entry_nombre.get().strip()
+        cantidad_str = self.entry_cantidad.get().strip()
+        
+        # Validaciones
+        if not nombre:
+            CTkMessagebox(title="Error", message="El nombre del ingrediente no puede estar vacío.", icon="warning")
+            return
+        
+        if not self.validar_nombre(nombre):
+            return
+        
+        if not cantidad_str:
+            CTkMessagebox(title="Error", message="La cantidad no puede estar vacía.", icon="warning")
+            return
+        
+        if not self.validar_cantidad(cantidad_str):
+            return
+        
+        try:
+            cantidad = int(cantidad_str)  # Usaremos int ya que solo estamos usando unid 
+            if cantidad <= 0:
+                CTkMessagebox(title="Error", message="La cantidad debe ser un número entero positivo.", icon="warning")
+                return
+        except ValueError:
+            CTkMessagebox(title="Error", message="La cantidad debe ser un número entero válido.", icon="warning")
+            return
+        
+        # Crear y agregar el ingrediente 
+        nuevo_ingrediente = Ingrediente(
+            nombre=nombre,
+            unidad="unid",  # Siempre "unid"
+            cantidad=cantidad
+        )
+        self.stock.agregar_ingrediente(nuevo_ingrediente)
+        
+        # Limpiar los campos del formulario
+        self.entry_nombre.delete(0, 'end')
+        self.entry_cantidad.delete(0, 'end')
+        # Actualizar el treeview
+        self.actualizar_treeview()
+        CTkMessagebox(title="Éxito", message=f"Ingrediente '{nombre}' agregado correctamente.", icon="info")
+
 
     def tarjeta_click(self, event, menu):
         suficiente_stock = True
@@ -393,52 +438,8 @@ class AplicacionConPestanas(ctk.CTk):
             CTkMessagebox(title="Error de Validación", message="La cantidad debe ser un número entero positivo.", icon="warning")
             return False
 
-def ingresar_ingrediente(self):
-    # Agrega un nuevo ingrediente al stock desde el formulario
-    nombre = self.entry_nombre.get().strip()
-    cantidad_str = self.entry_cantidad.get().strip()
-    
-    # Validaciones
-    if not nombre:
-        CTkMessagebox(title="Error", message="El nombre del ingrediente no puede estar vacío.", icon="warning")
-        return
-    
-    if not self.validar_nombre(nombre):
-        return
-    
-    if not cantidad_str:
-        CTkMessagebox(title="Error", message="La cantidad no puede estar vacía.", icon="warning")
-        return
-    
-    if not self.validar_cantidad(cantidad_str):
-        return
-    
-    try:
-        cantidad = int(cantidad_str)  # Usaremos int ya que solo estamos usando unid 
-        if cantidad <= 0:
-            CTkMessagebox(title="Error", message="La cantidad debe ser un número entero positivo.", icon="warning")
-            return
-    except ValueError:
-        CTkMessagebox(title="Error", message="La cantidad debe ser un número entero válido.", icon="warning")
-        return
-    
-    # Crear y agregar el ingrediente 
-    nuevo_ingrediente = Ingrediente(
-        nombre=nombre,
-        unidad="unid",  # Siempre "unid"
-        cantidad=cantidad
-    )
-    self.stock.agregar_ingrediente(nuevo_ingrediente)
-    
-    # Limpiar los campos del formulario
-    self.entry_nombre.delete(0, 'end')
-    self.entry_cantidad.delete(0, 'end')
-    # Actualizar el treeview
-    self.actualizar_treeview()
-    CTkMessagebox(title="Éxito", message=f"Ingrediente '{nombre}' agregado correctamente.", icon="info")
-
     def eliminar_ingrediente(self):
-        """Elimina el ingrediente seleccionado en el treeview."""
+        # Elimina el ingrediente seleccionado en el treeview
         seleccion = self.tree.selection()
         
         if not seleccion:

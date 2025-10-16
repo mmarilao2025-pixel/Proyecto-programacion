@@ -234,10 +234,10 @@ class AplicacionConPestanas(ctk.CTk):
         self.entry_nombre = ctk.CTkEntry(frame_formulario)
         self.entry_nombre.pack(pady=5)
 
-        #label_cantidad = ctk.CTkLabel(frame_formulario, text="Unidad:")
-        #label_cantidad.pack(pady=5)
-        #self.combo_unidad = ctk.CTkComboBox(frame_formulario, values=["unid, "])
-        #self.combo_unidad.pack(pady=5)
+        label_cantidad = ctk.CTkLabel(frame_formulario, text="Unidad:")
+        label_cantidad.pack(pady=5)
+        self.combo_unidad = ctk.CTkComboBox(frame_formulario, values=["unid, "])
+        self.combo_unidad.pack(pady=5)
 
         label_cantidad = ctk.CTkLabel(frame_formulario, text="Cantidad:")
         label_cantidad.pack(pady=5)
@@ -261,6 +261,7 @@ class AplicacionConPestanas(ctk.CTk):
 
         self.boton_generar_menu = ctk.CTkButton(frame_treeview, text="Generar Menú", command=self.generar_menus)
         self.boton_generar_menu.pack(pady=10)
+
     def tarjeta_click(self, event, menu):
         suficiente_stock = True
         if self.stock.lista_ingredientes==[]:
@@ -381,8 +382,13 @@ class AplicacionConPestanas(ctk.CTk):
             return False
 
     def validar_cantidad(self, cantidad):
+        """Valida que la cantidad sea un número entero positivo."""
         if cantidad.isdigit():
-            return True
+            if int(cantidad) > 0:
+                return True
+            else:
+                CTkMessagebox(title="Error de Validación", message="La cantidad debe ser mayor a 0.", icon="warning")
+                return False
         else:
             CTkMessagebox(title="Error de Validación", message="La cantidad debe ser un número entero positivo.", icon="warning")
             return False
@@ -432,7 +438,31 @@ def ingresar_ingrediente(self):
     CTkMessagebox(title="Éxito", message=f"Ingrediente '{nombre}' agregado correctamente.", icon="info")
 
     def eliminar_ingrediente(self):
-        pass
+        """Elimina el ingrediente seleccionado en el treeview."""
+        seleccion = self.tree.selection()
+        
+        if not seleccion:
+            CTkMessagebox(title="Error", message="Por favor, selecciona un ingrediente para eliminar.", icon="warning")
+            return
+        
+        # Obtener el nombre del ingrediente seleccionado
+        item = seleccion[0]
+        valores = self.tree.item(item, 'values')
+        nombre_ingrediente = valores[0]
+        
+        # Confirmar eliminación
+        respuesta = CTkMessagebox(
+            title="Confirmar Eliminación", 
+            message=f"¿Estás seguro de que quieres eliminar '{nombre_ingrediente}' del stock?",
+            icon="question", 
+            option_1="Cancelar", 
+            option_2="Eliminar"
+        )
+        
+        if respuesta.get() == "Eliminar":
+            self.stock.eliminar_ingrediente(nombre_ingrediente)
+            self.actualizar_treeview()
+            CTkMessagebox(title="Éxito", message=f"Ingrediente '{nombre_ingrediente}' eliminado correctamente.", icon="info")
 
     def actualizar_treeview(self):
         # Limpiar el treeview

@@ -346,7 +346,21 @@ class AplicacionConPestanas(ctk.CTk):
         pass
 
     def generar_boleta(self):
-        pass
+        #genera la boleta y lo notifica al usuario
+        if not self.pedido.menus:
+            CTkMessagebox(title="Error", message="No hay menús en el pedido para generar una boleta.", icon="warning")
+            return
+        try:
+           Boleta_facade = BoletaFacade(self.pedido)# crea la instancia de boleta con el pedido actual
+           pdf_path = Boleta_facade.generar_boleta() # total y generar la boleta
+
+           CTkMessagebox(title="Boleta Generada", message=f"Boleta generada exitosamente en {pdf_path}", icon="Check")
+            #limpiar el pedido despues de generar la boleta
+           self.pedido.menus = [] 
+           self.actualizar_treeview_pedido()
+           self.label_total.configure(text=f"Total: $0.00")
+        except Exception as e:
+            CTkMessagebox(title="Error al Generar Boleta", message=f"Ocurrió un error al generar la boleta.\n{e}", icon="cancel")
 
     def configurar_pestana2(self):
         frame_superior = ctk.CTkFrame(self.tab2)

@@ -13,7 +13,6 @@ class CrearMenu(IMenu):
     cantidad: int = field(default=0, compare=False)
 
     def esta_disponible(self, stock: Stock) -> bool:
-        """Verifica si el menú está disponible según el stock."""
         for req in self.ingredientes:
             ok = False
             for ing in stock.lista_ingredientes:

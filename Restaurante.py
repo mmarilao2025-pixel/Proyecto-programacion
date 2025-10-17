@@ -320,66 +320,41 @@ class AplicacionConPestanas(ctk.CTk):
 
 
     def tarjeta_click(self, event, menu):
-
+        # Verificar stock suficiente para 1 menú
         suficiente_stock = True
-
-        # Verificar disponibilidad de todos los ingredientes del menú
         for ingrediente_necesario in menu.ingredientes:
             nombre_necesario = ingrediente_necesario.nombre.strip().lower()
             unidad_necesaria = ingrediente_necesario.unidad.strip().lower()
             cantidad_necesaria = int(ingrediente_necesario.cantidad)
-            
+
             encontrado = False
             for ingrediente_stock in self.stock.lista_ingredientes:
                 nombre_stock = ingrediente_stock.nombre.strip().lower()
                 unidad_stock = ingrediente_stock.unidad.strip().lower()
-
                 if nombre_necesario == nombre_stock and unidad_necesaria == unidad_stock:
                     encontrado = True
                     if int(ingrediente_stock.cantidad) < cantidad_necesaria:
                         suficiente_stock = False
                     break
-            
             if not encontrado:
                 suficiente_stock = False
-            
             if not suficiente_stock:
                 break
 
-        # Si hay suficiente stock, restar cantidades y agregar al pedido
         if suficiente_stock:
+            # Descontar los ingredientes correspondientes a 1 menú
             for ingrediente_necesario in menu.ingredientes:
                 for ingrediente_stock in self.stock.lista_ingredientes:
-                    if (ingrediente_necesario.nombre.strip().lower() == ingrediente_stock.nombre.strip().lower()
-                        and ingrediente_necesario.unidad.strip().lower() == ingrediente_stock.unidad.strip().lower()):
-                        ingrediente_stock.cantidad = str(
-                            int(ingrediente_stock.cantidad) - int(ingrediente_necesario.cantidad)
-                        )
-
-            self.pedido.agregar_menu(menu)
-            self.actualizar_treeview_pedido()
-            total = self.pedido.calcular_total()
-            self.label_total.configure(text=f"Total: ${total:.2f}")
-        else:
-            CTkMessagebox(
-                title="Stock Insuficiente",
-                message=f"No hay suficientes ingredientes para preparar el menú '{menu.nombre}'.",
-                icon="warning"
-            )
-
-
-        # Si hay stock suficiente, descontar ingredientes y agregar al pedido
-        if suficiente_stock:
-            for ingrediente_necesario in menu.ingredientes:
-                nombre_necesario = ingrediente_necesario.nombre.strip().lower()
-                cantidad_necesaria = int(ingrediente_necesario.cantidad)
-                for ingrediente_stock in self.stock.lista_ingredientes:
-                    nombre_stock = ingrediente_stock.nombre.strip().lower()
-                    if nombre_necesario == nombre_stock:
-                        ingrediente_stock.cantidad = int(ingrediente_stock.cantidad) - cantidad_necesaria
+                    if ingrediente_stock.nombre.strip().lower() == ingrediente_necesario.nombre.strip().lower() \
+                    and ingrediente_stock.unidad.strip().lower() == ingrediente_necesario.unidad.strip().lower():
+                        ingrediente_stock.cantidad -= int(ingrediente_necesario.cantidad)
                         break
-            
-            self.pedido.agregar_menu(menu)
+
+            # Agregar 1 menú al pedido
+            menu_a_agregar = CrearMenu(menu.nombre, menu.ingredientes, menu.precio, getattr(menu, "icono_path", None))
+            self.pedido.agregar_menu(menu_a_agregar)
+
+            # Actualizar Treeview y total
             self.actualizar_treeview_pedido()
             total = self.pedido.calcular_total()
             self.label_total.configure(text=f"Total: ${total:.2f}")
@@ -389,6 +364,7 @@ class AplicacionConPestanas(ctk.CTk):
                 message=f"No hay suficientes ingredientes para preparar el menú '{menu.nombre}'.",
                 icon="warning"
             )
+
 
     
     def cargar_icono_menu(self, ruta_icono):

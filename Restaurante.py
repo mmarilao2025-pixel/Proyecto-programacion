@@ -376,24 +376,68 @@ class AplicacionConPestanas(ctk.CTk):
         pass
 
     def eliminar_menu(self):
-        pass
+        seleccion = self.treeview_menu.selection()
+
+        if not seleccion:
+            CTkMessagebox(title="Error", message="Por favor selecciona un menú para eliminar.", icon="warning")
+            return
+
+        item = seleccion[0]
+        valores = self.treeview_menu.item(item, 'values')
+        nombre_menu = valores[0]
+
+        # Confirmar eliminación
+        respuesta = CTkMessagebox(
+            title="Confirmar Eliminación",
+            message=f"¿Estás seguro de que quieres eliminar '{nombre_menu}' del pedido?",
+            icon="question",
+            option_1="Cancelar",
+            option_2="Eliminar"
+        )
+
+        if respuesta.get() != "Eliminar":
+            return
+
+        # Buscar y eliminar la primera coincidencia del menú en el pedido
+        for i, menu in enumerate(self.pedido.menus):
+            if menu.nombre == nombre_menu:
+                # Restaurar los ingredientes al stock
+                for ingrediente_necesario in menu.ingredientes:
+                    for ingrediente_stock in self.stock.lista_ingredientes:
+                        if ingrediente_stock.nombre.strip().lower() == ingrediente_necesario.nombre.strip().lower():
+                            ingrediente_stock.cantidad += int(ingrediente_necesario.cantidad)
+                            break
+                # Eliminar menú del pedido
+                self.pedido.menus.pop(i)
+                break
+
+        # Actualizar Treeview y total
+        self.actualizar_treeview_pedido()
+        total = self.pedido.calcular_total()
+        self.label_total.configure(text=f"Total: ${total:.2f}")
+        CTkMessagebox(title="Éxito", message=f"Menú '{nombre_menu}' eliminado del pedido.", icon="info")
+
 
     def generar_boleta(self):
-        #genera la boleta y lo notifica al usuario
         if not self.pedido.menus:
             CTkMessagebox(title="Error", message="No hay menús en el pedido para generar una boleta.", icon="warning")
             return
-        try:
-           Boleta_facade = BoletaFacade(self.pedido)# crea la instancia de boleta con el pedido actual
-           pdf_path = Boleta_facade.generar_boleta() # total y generar la boleta
 
-           CTkMessagebox(title="Boleta Generada", message=f"Boleta generada exitosamente en {pdf_path}", icon="Check")
-            #limpiar el pedido despues de generar la boleta
-           self.pedido.menus = [] 
-           self.actualizar_treeview_pedido()
-           self.label_total.configure(text=f"Total: $0.00")
+        try:
+            boleta_facade = BoletaFacade(self.pedido)  # crea la instancia de boleta con el pedido actual
+            pdf_path = boleta_facade.generar_boleta()  # total y generar la boleta
+
+            # Notificar al usuario
+            CTkMessagebox(title="Boleta Generada",message="Boleta generada en: boleta.pdf",icon="info")
+
+            # Limpiar el pedido después de generar la boleta
+            self.pedido.menus = []
+            self.actualizar_treeview_pedido()
+            self.label_total.configure(text=f"Total: $0.00")
+
         except Exception as e:
             CTkMessagebox(title="Error al Generar Boleta", message=f"Ocurrió un error al generar la boleta.\n{e}", icon="cancel")
+
 
     def configurar_pestana2(self):
         frame_superior = ctk.CTkFrame(self.tab2)

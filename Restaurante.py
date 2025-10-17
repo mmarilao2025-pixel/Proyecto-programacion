@@ -62,14 +62,13 @@ class AplicacionConPestanas(ctk.CTk):
 
         elif selected_tab == "Carta restorante":
             print('Carta restorante')
-            
+
         if selected_tab == "Boleta":
             self.actualizar_treeview()
             print('Boleta')   
 
         elif selected_tab == "Boleta":
             print('Boleta')
-
 
     def crear_pestanas(self):
         self.tab3 = self.tabview.add("carga de ingredientes")  

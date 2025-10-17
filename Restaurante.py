@@ -23,17 +23,12 @@ class AplicacionConPestanas(ctk.CTk):
         self.geometry("870x700")
         nametofont("TkHeadingFont").configure(size=14)
         nametofont("TkDefaultFont").configure(size=11)
-
         self.stock = Stock()
         self.menus_creados = set()
-
         self.pedido = Pedido()
-
         self.menus = get_default_menus()  
-  
         self.tabview = ctk.CTkTabview(self,command=self.on_tab_change)
         self.tabview.pack(expand=True, fill="both", padx=10, pady=10)
-
         self.crear_pestanas()
 
     def actualizar_treeview(self):
@@ -55,22 +50,18 @@ class AplicacionConPestanas(ctk.CTk):
 
         elif selected_tab == "Pedido":
             self.actualizar_treeview_pedido()
-            print('pedido')
+            self.cargar_tarjetas_disponibles()
 
-            # Limpiar tarjetas previas
-            for widget in tarjetas_frame.winfo_children():
-                widget.destroy()
-
-            # Crear tarjetas con imágenes
-            for menu in self.menus:
-                self.crear_tarjeta(menu)
 
         elif selected_tab == "Carta restorante":
             print('Carta restorante')
 
+        if selected_tab == "Boleta":
+            self.actualizar_treeview()
+            print('Boleta')   
+
         elif selected_tab == "Boleta":
             print('Boleta')
-
 
     def crear_pestanas(self):
         self.tab3 = self.tabview.add("carga de ingredientes")  
@@ -105,27 +96,35 @@ class AplicacionConPestanas(ctk.CTk):
             CTkMessagebox(title="Error", message="Primero debes cargar un archivo CSV.", icon="warning")
             return
 
-        if 'nombre' not in self.df_csv.columns or 'cantidad' not in self.df_csv.columns:
-            CTkMessagebox(title="Error", message="El CSV debe tener columnas 'nombre' y 'cantidad'.", icon="warning")
+        if 'nombre' not in self.df_csv.columns or 'cantidad' not in self.df_csv.columns or 'unidad' not in self.df_csv.columns:
+            CTkMessagebox(title="Error", message="El CSV debe tener columnas 'nombre', 'unidad' y 'cantidad'.", icon="warning")
             return
         
         for _, row in self.df_csv.iterrows():
-            nombre = str(row['nombre'])
-            cantidad = float(row['cantidad'])
-            unidad = str(row['unidad'])
-            ingrediente = Ingrediente(nombre=nombre,unidad=unidad,cantidad=cantidad)
+            nombre = str(row['nombre']).strip()
+            unidad = str(row['unidad']).strip()
+            cantidad = int(row['cantidad'])
+            
+            ingrediente = Ingrediente(nombre=nombre, unidad=unidad, cantidad=cantidad)
             self.stock.agregar_ingrediente(ingrediente)
+
         CTkMessagebox(title="Stock Actualizado", message="Ingredientes agregados al stock correctamente.", icon="info")
-        self.actualizar_treeview()   
+        self.actualizar_treeview()  
 
     def cargar_csv(self):
         archivo = filedialog.askopenfile(filetypes=[("Archivos CSV", "*.csv")])
-        
+        if not archivo:
+            return
+
         # Lee el archivo CSV con codificación
         DataFrame = pd.read_csv(archivo, encoding='utf-8', skipinitialspace=True, engine='python')
         
-        # Realiza Una Limpieza del encabezado
+        # Limpia el encabezado de posibles caracteres extra
         DataFrame.columns = [col.replace('\ufeff', '').replace('ï»¿', '').strip() for col in DataFrame.columns]
+
+        # Eliminar espacios en nombres y unidades
+        DataFrame['nombre'] = DataFrame['nombre'].astype(str).str.strip()
+        DataFrame['unidad'] = DataFrame['unidad'].astype(str).str.strip()
 
         self.df_csv = DataFrame
         self.mostrar_dataframe_en_tabla(DataFrame)
@@ -321,36 +320,81 @@ class AplicacionConPestanas(ctk.CTk):
 
 
     def tarjeta_click(self, event, menu):
+
         suficiente_stock = True
-        if self.stock.lista_ingredientes==[]:
-            suficiente_stock=False
+
+        # Verificar disponibilidad de todos los ingredientes del menú
         for ingrediente_necesario in menu.ingredientes:
+            nombre_necesario = ingrediente_necesario.nombre.strip().lower()
+            unidad_necesaria = ingrediente_necesario.unidad.strip().lower()
+            cantidad_necesaria = int(ingrediente_necesario.cantidad)
+            
+            encontrado = False
             for ingrediente_stock in self.stock.lista_ingredientes:
-                if ingrediente_necesario.nombre == ingrediente_stock.nombre:
-                    if int(ingrediente_stock.cantidad) < int(ingrediente_necesario.cantidad):
+                nombre_stock = ingrediente_stock.nombre.strip().lower()
+                unidad_stock = ingrediente_stock.unidad.strip().lower()
+
+                if nombre_necesario == nombre_stock and unidad_necesaria == unidad_stock:
+                    encontrado = True
+                    if int(ingrediente_stock.cantidad) < cantidad_necesaria:
                         suficiente_stock = False
-                        break
+                    break
+            
+            if not encontrado:
+                suficiente_stock = False
+            
             if not suficiente_stock:
                 break
-        
+
+        # Si hay suficiente stock, restar cantidades y agregar al pedido
         if suficiente_stock:
             for ingrediente_necesario in menu.ingredientes:
                 for ingrediente_stock in self.stock.lista_ingredientes:
-                    if ingrediente_necesario.nombre == ingrediente_stock.nombre:
-                        ingrediente_stock.cantidad = str(int(ingrediente_stock.cantidad) - int(ingrediente_necesario.cantidad))
+                    if (ingrediente_necesario.nombre.strip().lower() == ingrediente_stock.nombre.strip().lower()
+                        and ingrediente_necesario.unidad.strip().lower() == ingrediente_stock.unidad.strip().lower()):
+                        ingrediente_stock.cantidad = str(
+                            int(ingrediente_stock.cantidad) - int(ingrediente_necesario.cantidad)
+                        )
+
+            self.pedido.agregar_menu(menu)
+            self.actualizar_treeview_pedido()
+            total = self.pedido.calcular_total()
+            self.label_total.configure(text=f"Total: ${total:.2f}")
+        else:
+            CTkMessagebox(
+                title="Stock Insuficiente",
+                message=f"No hay suficientes ingredientes para preparar el menú '{menu.nombre}'.",
+                icon="warning"
+            )
+
+
+        # Si hay stock suficiente, descontar ingredientes y agregar al pedido
+        if suficiente_stock:
+            for ingrediente_necesario in menu.ingredientes:
+                nombre_necesario = ingrediente_necesario.nombre.strip().lower()
+                cantidad_necesaria = int(ingrediente_necesario.cantidad)
+                for ingrediente_stock in self.stock.lista_ingredientes:
+                    nombre_stock = ingrediente_stock.nombre.strip().lower()
+                    if nombre_necesario == nombre_stock:
+                        ingrediente_stock.cantidad = int(ingrediente_stock.cantidad) - cantidad_necesaria
+                        break
             
             self.pedido.agregar_menu(menu)
             self.actualizar_treeview_pedido()
             total = self.pedido.calcular_total()
             self.label_total.configure(text=f"Total: ${total:.2f}")
         else:
-            CTkMessagebox(title="Stock Insuficiente", message=f"No hay suficientes ingredientes para preparar el menú '{menu.nombre}'.", icon="warning")
+            CTkMessagebox(
+                title="Stock Insuficiente",
+                message=f"No hay suficientes ingredientes para preparar el menú '{menu.nombre}'.",
+                icon="warning"
+            )
+
     
     def cargar_icono_menu(self, ruta_icono):
         imagen = Image.open(ruta_icono)
         icono_menu = ctk.CTkImage(imagen, size=(64, 64))
         return icono_menu
-
     
     def generar_menus(self):
         pass
@@ -454,7 +498,7 @@ class AplicacionConPestanas(ctk.CTk):
             return False
 
     def validar_cantidad(self, cantidad):
-        """Valida que la cantidad sea un número entero positivo."""
+        #Valida que la cantidad sea un número entero positivo
         if cantidad.isdigit():
             if int(cantidad) > 0:
                 return True
@@ -500,6 +544,36 @@ class AplicacionConPestanas(ctk.CTk):
         # Insertar los ingredientes actualizados
         for ingrediente in self.stock.lista_ingredientes:
             self.tree.insert("", "end", values=(ingrediente.nombre, ingrediente.unidad, ingrediente.cantidad))
+
+
+    def menu_disponible(self, menu):
+        for ingrediente_necesario in menu.ingredientes:
+            nombre_necesario = ingrediente_necesario.nombre.strip().lower()
+            cantidad_necesaria = int(ingrediente_necesario.cantidad)
+            encontrado = False
+            for ingrediente_stock in self.stock.lista_ingredientes:
+                nombre_stock = ingrediente_stock.nombre.strip().lower()
+                if nombre_necesario == nombre_stock:
+                    encontrado = True
+                    if int(ingrediente_stock.cantidad) < cantidad_necesaria:
+                        return False
+                    break
+            if not encontrado:
+                return False
+        return True
+
+    
+    def cargar_tarjetas_disponibles(self):
+        # Limpiar tarjetas previas
+        for widget in tarjetas_frame.winfo_children():
+            widget.destroy()
+        
+        self.menus_creados.clear()
+
+        for menu in self.menus:
+            if self.menu_disponible(menu):
+                self.crear_tarjeta(menu)
+                self.menus_creados.add(menu.nombre)
 
 
 if __name__ == "__main__":

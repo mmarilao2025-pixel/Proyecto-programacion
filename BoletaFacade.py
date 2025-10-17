@@ -1,6 +1,5 @@
 from fpdf import FPDF
 from datetime import datetime
-
 class BoletaFacade:
     def __init__(self, pedido):
         self.pedido = pedido

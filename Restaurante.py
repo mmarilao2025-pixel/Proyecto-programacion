@@ -15,6 +15,8 @@ from menu_pdf import create_menu_pdf
 from ctk_pdf_viewer import CTkPDFViewer
 import os
 from tkinter.font import nametofont
+
+
 class AplicacionConPestanas(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -116,13 +118,13 @@ class AplicacionConPestanas(ctk.CTk):
         if not archivo:
             return
 
-        # Lee el archivo CSV con codificación
+        # Lee el archivo CSV con una codificación
         DataFrame = pd.read_csv(archivo, encoding='utf-8', skipinitialspace=True, engine='python')
         
         # Limpia el encabezado de posibles caracteres extra
         DataFrame.columns = [col.replace('\ufeff', '').replace('ï»¿', '').strip() for col in DataFrame.columns]
 
-        # Eliminar espacios en nombres y unidades
+        # Elimina espacios en nombres y unidades
         DataFrame['nombre'] = DataFrame['nombre'].astype(str).str.strip()
         DataFrame['unidad'] = DataFrame['unidad'].astype(str).str.strip()
 
@@ -278,8 +280,7 @@ class AplicacionConPestanas(ctk.CTk):
         # Agrega un nuevo ingrediente al stock desde el formulario
         nombre = self.entry_nombre.get().strip()
         cantidad_str = self.entry_cantidad.get().strip()
-        
-        # Validaciones
+        # Validaciones del formulario
         if not nombre:
             CTkMessagebox(title="Error", message="El nombre del ingrediente no puede estar vacío.", icon="warning")
             return
@@ -295,7 +296,7 @@ class AplicacionConPestanas(ctk.CTk):
             return
         
         try:
-            cantidad = int(cantidad_str)  # Usaremos int ya que solo estamos usando unid 
+            cantidad = int(cantidad_str)
             if cantidad <= 0:
                 CTkMessagebox(title="Error", message="La cantidad debe ser un número entero positivo.", icon="warning")
                 return
@@ -303,7 +304,7 @@ class AplicacionConPestanas(ctk.CTk):
             CTkMessagebox(title="Error", message="La cantidad debe ser un número entero válido.", icon="warning")
             return
         
-        # Crear y agregar el ingrediente 
+        # Crea y agrega el ingrediente ingresado 
         nuevo_ingrediente = Ingrediente(
             nombre=nombre,
             unidad="unid",  # Siempre "unid"
@@ -311,10 +312,10 @@ class AplicacionConPestanas(ctk.CTk):
         )
         self.stock.agregar_ingrediente(nuevo_ingrediente)
         
-        # Limpiar los campos del formulario
+        # Limpia los campos del formulario
         self.entry_nombre.delete(0, 'end')
         self.entry_cantidad.delete(0, 'end')
-        # Actualizar el treeview
+        # Actualiza el treeview
         self.actualizar_treeview()
         CTkMessagebox(title="Éxito", message=f"Ingrediente '{nombre}' agregado correctamente.", icon="info")
 
@@ -537,12 +538,12 @@ class AplicacionConPestanas(ctk.CTk):
             CTkMessagebox(title="Error", message="Por favor, selecciona un ingrediente para eliminar.", icon="warning")
             return
         
-        # Obtener el nombre del ingrediente seleccionado
+        # Obtiene el nombre del ingrediente selecionado
         item = seleccion[0]
         valores = self.tree.item(item, 'values')
         nombre_ingrediente = valores[0]
         
-        # Confirmar eliminación
+        # Confirma la eliminación del ingrediente
         respuesta = CTkMessagebox(
             title="Confirmar Eliminación", 
             message=f"¿Estás seguro de que quieres eliminar '{nombre_ingrediente}' del stock?",

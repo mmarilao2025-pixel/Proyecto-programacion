@@ -23,17 +23,12 @@ class AplicacionConPestanas(ctk.CTk):
         self.geometry("870x700")
         nametofont("TkHeadingFont").configure(size=14)
         nametofont("TkDefaultFont").configure(size=11)
-
         self.stock = Stock()
         self.menus_creados = set()
-
         self.pedido = Pedido()
-
         self.menus = get_default_menus()  
-  
         self.tabview = ctk.CTkTabview(self,command=self.on_tab_change)
         self.tabview.pack(expand=True, fill="both", padx=10, pady=10)
-
         self.crear_pestanas()
 
     def actualizar_treeview(self):
@@ -46,19 +41,36 @@ class AplicacionConPestanas(ctk.CTk):
 
     def on_tab_change(self):
         selected_tab = self.tabview.get()
+
         if selected_tab == "carga de ingredientes":
             print('carga de ingredientes')
-        if selected_tab == "Stock":
+
+        elif selected_tab == "Stock":
             self.actualizar_treeview()
-        if selected_tab == "Pedido":
-            self.actualizar_treeview()
+
+        elif selected_tab == "Pedido":
+            self.actualizar_treeview_pedido()
             print('pedido')
-        if selected_tab == "Carta restorante":
-            self.actualizar_treeview()
+
+            # Limpiar tarjetas previas
+            for widget in tarjetas_frame.winfo_children():
+                widget.destroy()
+
+            # Crear tarjetas con imágenes
+            for menu in self.menus:
+                self.crear_tarjeta(menu)
+
+        elif selected_tab == "Carta restorante":
             print('Carta restorante')
+            
         if selected_tab == "Boleta":
             self.actualizar_treeview()
-            print('Boleta')       
+            print('Boleta')   
+
+        elif selected_tab == "Boleta":
+            print('Boleta')
+
+
     def crear_pestanas(self):
         self.tab3 = self.tabview.add("carga de ingredientes")  
         self.tab1 = self.tabview.add("Stock")
@@ -337,7 +349,6 @@ class AplicacionConPestanas(ctk.CTk):
         imagen = Image.open(ruta_icono)
         icono_menu = ctk.CTkImage(imagen, size=(64, 64))
         return icono_menu
-
     
     def generar_menus(self):
         pass
@@ -441,7 +452,7 @@ class AplicacionConPestanas(ctk.CTk):
             return False
 
     def validar_cantidad(self, cantidad):
-        """Valida que la cantidad sea un número entero positivo."""
+        #Valida que la cantidad sea un número entero positivo
         if cantidad.isdigit():
             if int(cantidad) > 0:
                 return True

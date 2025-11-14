@@ -14,3 +14,5 @@ class Ingrediente:
         if self.unidad:
             return f"{self.nombre} ({self.unidad}) x {self.cantidad}"
         return f"{self.nombre} x {self.cantidad}"
+        return f"{self.nombre} x {self.cantidad}"
+
